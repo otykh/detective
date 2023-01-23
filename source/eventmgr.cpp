@@ -7,19 +7,12 @@ EventManager::Event::Event(int functionIndex, std::string formula)
 	this->functionIndexCall = functionIndex;
 	this->formula = formula;
 }
-EventManager::EventManager(int(*randRange)(int, int))
-{
-	this->randRange = randRange;
-	if(this->randRange == nullptr)
-	{
-		throw;
-	}
-}
+
 std::string EventManager::CauseOrgEvent(const World& w, Org* const org)
 {
 	int maxEventIndex = org->getHeat() * EVENT_MANAGER_EVENT_NUMBER;
 	maxEventIndex = std::max(maxEventIndex, MIN_EVENT_LENGTH);
-	int index = randRange(0, maxEventIndex);
+	int index = random::Range(0, maxEventIndex);
 	return EventManager::eventArray[index]->Activate(w, org);
 }
 std::string EventManager::Event::Activate(const World& w, Org* const org)

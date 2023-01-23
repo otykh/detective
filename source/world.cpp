@@ -1,18 +1,21 @@
 #include "world.h"
-#include <cstdlib>
 #include <time.h>
 #include "logger.h"
 
-World::World(bool(*randBool)(int), int(*randRange)(int, int)) : randBool(randBool), randRange(randRange)
+World::World()
 {
 }
 
 Character* World::GetRandomCharacterInOrg(Org* org) const
 {
-	int index = randRange(0, org->associates.size());
+	int heat_extend_mod = random::Range(0, org->getHeatExtend());
+	int org_layer_index = (org->structure.size() - 1) - heat_extend_mod;
+	int index = random::Range(0, org->structure[org_layer_index].size());
+	bool loop = false;
 	for(;;)
 	{
-		Character* ch = org->associates[index];
+		Character* ch = org->associates[org->structure[org_layer_index][index]];
+
 		if(ch->getIsAlive() == true)
 		{
 			return ch;
@@ -20,16 +23,22 @@ Character* World::GetRandomCharacterInOrg(Org* org) const
 		else
 		{
 			index++;
+			if(index >= org->structure[org_layer_index].size())
+			{
+				if(loop) {throw;}
+				index = 0;
+				loop = true;
+			}
 		}
 	}
 }
 Org* World::GetRandomOrganisation() const
 {
-	return organizations[randRange(0, organizations.size())];
+	return organizations[random::Range(0, organizations.size())];
 }
 Org* World::GenerateOrganization()
 {
-	Org* generated = new Org(Org::S_ORG_NAMES_ARR[randRange(0, ORG_RANDOM_NAME_ARR_LENGTH)]);
+	Org* generated = new Org(Org::S_ORG_NAMES_ARR[random::Range(0, ORG_RANDOM_NAME_ARR_LENGTH)]);
 	this->organizations.push_back(generated);
 	return generated;
 }
@@ -40,22 +49,22 @@ Character* World::GenerateCharacter(Org* originOrg, int future_position)
 	std::string nick_name;
 	std::string sur_name;
 
-	bool isMale = randBool(90);
-	int n_index = randRange(0, CHARACTER_RANDOM_NAME_ARRAY_LENGTH);
-	int sur_index = randRange(0, CHARACTER_RANDOM_SURNAME_ARRAY_LENGTH);
+	bool isMale = random::Bool(90);
+	int n_index = random::Range(0, CHARACTER_RANDOM_NAME_ARRAY_LENGTH);
+	int sur_index = random::Range(0, CHARACTER_RANDOM_SURNAME_ARRAY_LENGTH);
 
 	int age;
 	if(future_position == 0)
 	{
-		age = randRange(51, 76); // the boss should be older
+		age = random::Range(51, 76); // the boss should be older
 	}
 	else if(future_position == 1)
 	{
-		age = randRange(30, 50); // the trusted people should have older age
+		age = random::Range(30, 50); // the trusted people should have older age
 	}
 	else
 	{
-		age = randRange(18, 50);
+		age = random::Range(18, 50);
 	}
 
 	if(isMale)
@@ -75,12 +84,12 @@ Character* World::GenerateCharacter(Org* originOrg, int future_position)
 	}
 	else
 	{
-		nick_len = randRange(2, 4);
+		nick_len = random::Range(2, 4);
 	}
 
 	for(int i = 0; i < nick_len; i++)
 	{
-		nick_name += Character::S_NICK_NAMES[randRange(0, CHARACTER_RANDOM_NICK_NAME_ARRAY_LENGTH)];
+		nick_name += Character::S_NICK_NAMES[random::Range(0, CHARACTER_RANDOM_NICK_NAME_ARRAY_LENGTH)];
 	}
 
 	Character* character = new Character(
@@ -97,11 +106,11 @@ Character* World::GenerateCharacter(Org* originOrg, int future_position)
 }
 void World::GenerateRandomWorld()
 {
-	for(int i = 0; i < randRange(3, 6); i++)
+	for(int i = 0; i < random::Range(3, 6); i++)
 	{
 		Org* org = World::GenerateOrganization();
 
-		int member_count = randRange(6, 100);
+		int member_count = random::Range(6, 100);
 		int layer1;
 		int layer2;
 		if(member_count > 20)
@@ -133,6 +142,35 @@ void World::GenerateRandomWorld()
 			org->AddAssociate(genChar, position);
 		}
 		org->Restructure();
+	}
+
+	RevaluateOrgRelations();
+}
+void World::GenerateOrgRelations()
+{
+	int org_count = organizations.size();
+
+	org_relations = std::vector<std::vector<float>>(org_count);
+	for(int i = 0; i < org_count; i++)
+	{
+		org_relations[i] = std::vector<float>(org_count);
+	}
+}
+void World::RevaluateOrgRelations()
+{
+	if(org_relations.size() == 0)
+	{
+		this->GenerateOrgRelations();
+	}
+
+	for(int i = 0; i < org_relations.size(); i++)
+	{
+		for(int j = 0; j < org_relations[i].size(); j++)
+		{
+			org_relations[i][j] = Org::CompareTwoOrgsAlignment(organizations[i], organizations[j]);
+			std::cout << org_relations[i][j] << ' ';
+		}
+		std::cout << std::endl;
 	}
 }
 void World::PrintOrgTree(Org* org)
@@ -169,7 +207,7 @@ void World::PrintWorldInformation()
 
 		Logger::l << "They call themselves \"" << cstring(org->getName(), cstring::BLACK, cstring::RED) << "\"" << std::endl;
 
-		/*for(int i = 0; i < org->structure.size(); i++)
+		for(int i = 0; i < org->structure.size(); i++)
 		{
 			for(int j = 0; j < org->structure[i].size(); j++)
 			{
@@ -185,7 +223,7 @@ void World::PrintWorldInformation()
 				std::cout << '{' << org->responsibility[i][j].first << " ; " << org->responsibility[i][j].second << "} ";
 			}
 			std::cout << std::endl;
-		}*/
+		}
 		World::PrintOrgTree(org);
 
 		Logger::ls << std::endl;

@@ -14,6 +14,10 @@ private:
 	const int id;
 	const std::string orgName;
 
+	int heat_extend;
+	// while the heat system is how bad the air is in the org
+	// the heat extend will show how far up the managment the events will happen
+	// this will remove any posibility for the boss to be killed at the start of the game
 	float heat;
 	// [0, 1] range how heated the organization is
 	// the large the head the more events and the more impactful they will be
@@ -24,6 +28,7 @@ public:
 
 	std::string getName() const;
 	float getHeat() const;
+	int getHeatExtend() const;
 	void AddAssociate(Character* newCharacter, int position);
 	void Restructure();
 
@@ -45,6 +50,8 @@ public:
 	// this is for the restructure game machinic @TODO
 	// if all workers in managers responsibility are gone (left or dead) then the worker is going
 	// to be fired OR they are going to get workers split from other team but rarely
+
+	static float CompareTwoOrgsAlignment(const Org*, const Org*); // [0 - 1] relation status 0 - HATE, 1 - UWU
 
 	static const char* S_ORG_NAMES_ARR[];
 };

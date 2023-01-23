@@ -13,6 +13,22 @@ Character::Character(std::string& i_name, std::string& i_surname, std::string& i
 	ptr_associated_organization(i_org_ptr)
 {
 	this->isAlive = true;
+
+	this->org_respect = random::Float();
+	this->trust = random::Float();
+	this->talkative = random::Float();
+	this->responsible = random::Float();
+	this->respect = random::Float();
+	this->naive = random::Float();
+	this->hatered = random::Float();
+
+	this->value_respect = random::Float();
+	this->value_life = random::Float();
+	this->value_security = random::Float();
+	this->value_money = random::Float();
+	this->value_justice = random::Float();
+	this->value_privacy = random::Float();
+	this->value_family = random::Float();
 }
 
 std::string Character::getFullName() const
@@ -38,6 +54,35 @@ bool Character::getIsMale() const
 bool Character::getIsAlive() const
 {
 	return this->isAlive;
+}
+
+float Character::get_value_respect()
+{
+	return value_respect;
+}
+float Character::get_value_life()
+{
+	return value_life;
+}
+float Character::get_value_security()
+{
+	return value_security;
+}
+float Character::get_value_money()
+{
+	return value_money;
+}
+float Character::get_value_justice()
+{
+	return value_justice;
+}
+float Character::get_value_privacy()
+{
+	return value_privacy;
+}
+float Character::get_value_family()
+{
+	return value_family;
 }
 
 void Character::GetDisrespectedBy(Character* attacker)

@@ -1,7 +1,11 @@
 #include "organization.h"
 
 int Org::idCounter = 0;
-Org::Org(std::string i_orgName) : orgName(i_orgName), id(Org::idCounter++) {}
+Org::Org(std::string i_orgName) : orgName(i_orgName), id(Org::idCounter++)
+{
+	heat_extend = 0;
+	heat = 0;
+}
 void Org::AddAssociate(Character* newCharacter, int position)
 {
 	associates.push_back(newCharacter);
@@ -53,7 +57,30 @@ float Org::getHeat() const
 {
 	return heat;
 }
+int Org::getHeatExtend() const
+{
+	return heat_extend;
+}
 
+float Org::CompareTwoOrgsAlignment(const Org* orgOne, const Org* orgTwo)
+{
+	Character* bossOne = orgOne->associates[orgOne->structure[0][0]]; // boss in first org
+	Character* bossTwo = orgTwo->associates[orgTwo->structure[0][0]]; // boss in second org
+
+	float relation = 0;
+
+	relation += bossOne->get_value_respect() - bossTwo->get_value_respect();
+    relation += bossOne->get_value_life() - bossTwo->get_value_life();
+    relation += bossOne->get_value_security() - bossTwo->get_value_security();
+    relation += bossOne->get_value_money() - bossTwo->get_value_money();
+    relation += bossOne->get_value_justice() - bossTwo->get_value_justice();
+    relation += bossOne->get_value_privacy() - bossTwo->get_value_privacy();
+    relation += bossOne->get_value_family() - bossTwo->get_value_family();
+
+	relation = relation / 7;
+
+	return 1 - std::abs(relation);
+}
 const char* Org::S_ORG_NAMES_ARR[ORG_RANDOM_NAME_ARR_LENGTH] //@TODO expnd
 {
 	"Esquivel Hermanos",

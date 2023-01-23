@@ -9,6 +9,7 @@
 #include "character.h"
 #include "organization.h"
 #include "world.h"
+#include "rand.h"
 
 #define EVENT_MANAGER_EVENT_NUMBER 23
 #define MIN_EVENT_LENGTH 11 // where the event is ends at minimum heat
@@ -26,7 +27,7 @@ struct EventManager
 		std::string Activate(const World& w, Org* const org); // returns event description when called
 	};
 
-	EventManager(int(*)(int, int));
+	EventManager() = default;
 	std::string CauseOrgEvent(const World& world, Org* const org);
 	static const std::unique_ptr<Event> eventArray[EVENT_MANAGER_EVENT_NUMBER];
 

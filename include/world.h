@@ -3,6 +3,7 @@
 #include <vector>
 #include "character.h"
 #include "organization.h"
+#include "rand.h"
 
 /*
  * A class database, only controlled from the main entry
@@ -17,14 +18,14 @@ private:
 	// anything that is created, should be placed in this vector, no matter is dead or alive, busted or active etc.
 	std::vector<Character*> characters;
 	std::vector<Org*> organizations;
-
-	bool (*randBool)(int);
-	int (*randRange)(int, int);
+	std::vector<std::vector<float>> org_relations;
 
 public:
-	World(bool(*)(int), int(*)(int, int));
+	World();
 	// functions to access the characters etc.
 	void GenerateRandomWorld();
+	void GenerateOrgRelations();
+	void RevaluateOrgRelations();
 	Character* GetRandomCharacterInOrg(Org*) const;
 	Org* GetRandomOrganisation() const;
 	Org* GenerateOrganization();

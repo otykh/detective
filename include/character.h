@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "rand.h"
 
 #define CHARACTER_RANDOM_NAME_ARRAY_LENGTH 28
 #define CHARACTER_RANDOM_SURNAME_ARRAY_LENGTH 40
@@ -77,6 +78,14 @@ public:
 	void change_respect(float c);
 	void change_naive(float c);
 	void change_hatered(float c);
+
+	float get_value_respect();
+	float get_value_life();
+	float get_value_security();
+	float get_value_money();
+	float get_value_justice();
+	float get_value_privacy();
+	float get_value_family();
 
 	static const char* S_CHARACTER_MALE_NAMES[];
 	static const char* S_CHARACTER_FEMALE_NAMES[];
