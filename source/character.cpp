@@ -22,6 +22,8 @@ Character::Character(std::string& i_name, std::string& i_surname, std::string& i
 	this->naive = random::Float();
 	this->hatered = random::Float();
 
+	// test comment
+
 	this->value_respect = random::Float();
 	this->value_life = random::Float();
 	this->value_security = random::Float();
