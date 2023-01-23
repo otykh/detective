@@ -63,10 +63,20 @@ public:
 	std::string toString();
 
 	void GetDisrespectedBy(Character*); // causes high hatered
+	void GetAppreciatedBy(Character*); // removes hatered, adds trust
+	void IncreaseOrgLikeness();
 	void GetKilled(Character*); // get killed by character
 
 	void GetInformedAboutDeath(); // used when someone is killed and proven with evidence, can cause less trust
 	friend std::ostream& operator<<(std::ostream& os, const Character& dt);
+
+	void change_org_respect(float c);
+	void change_trust(float c);
+	void change_talkative(float c);
+	void change_responsible(float c);
+	void change_respect(float c);
+	void change_naive(float c);
+	void change_hatered(float c);
 
 	static const char* S_CHARACTER_MALE_NAMES[];
 	static const char* S_CHARACTER_FEMALE_NAMES[];

@@ -42,15 +42,24 @@ bool Character::getIsAlive() const
 
 void Character::GetDisrespectedBy(Character* attacker)
 {
-	this->hatered += 0.1f * this->value_life;
-	if(this->hatered > 1) {
-		this->hatered = 1;
-	}
+	this->change_trust(-0.2f);
+	this->change_hatered(-0.1f);
+}
+void Character::GetAppreciatedBy(Character* attacker)
+{
+	this->change_hatered(0.1f);
 }
 void Character::GetKilled(Character* attacker)
 {
 	this->isAlive = false; // now this character is DEAD
 	//@TODO report who is the attacker and at which operation GetInformedAboutDeath()
+}
+void Character::IncreaseOrgLikeness()
+{
+	this->change_hatered(0.04f);
+	this->change_org_respect(0.1f);
+	this->change_trust(0.1f);
+	this->change_respect(0.1f);
 }
 void Character::GetInformedAboutDeath()
 {
@@ -64,6 +73,43 @@ std::ostream& operator<<(std::ostream& os, const Character& dt)
 {
 	os << dt.getFullName() << " aka. \"" << dt.getNickName() << "\" " << dt.getAge() << " years old " << (dt.getIsMale() ? "Male " : "Female ") << ", Status: " << (dt.getIsAlive() ? "Alive " : "DEAD ");
     return os;
+}
+
+// BOILERPLATE:
+void Character::change_org_respect(float c)
+{
+	org_respect += c * value_respect;
+	org_respect = std::min(std::max(org_respect, .0f), 1.0f);
+}
+void Character::change_trust(float c)
+{
+	trust += c;
+	trust = std::min(std::max(trust, .0f), 1.0f);
+}
+void Character::change_talkative(float c)
+{
+	talkative += c;
+	talkative = std::min(std::max(talkative, .0f), 1.0f);
+}
+void Character::change_responsible(float c)
+{
+	responsible += c;
+	responsible = std::min(std::max(responsible, .0f), 1.0f);
+}
+void Character::change_respect(float c)
+{
+	respect += c;
+	respect = std::min(std::max(respect, .0f), 1.0f);
+}
+void Character::change_naive(float c)
+{
+	naive += c;
+	naive = std::min(std::max(naive, .0f), 1.0f);
+}
+void Character::change_hatered(float c)
+{
+	hatered += c * value_life;
+	hatered = std::min(std::max(hatered, .0f), 1.0f);
 }
 
 const char* Character::S_CHARACTER_MALE_NAMES[CHARACTER_RANDOM_NAME_ARRAY_LENGTH] =

@@ -49,6 +49,10 @@ std::string Org::getName() const
 {
 	return orgName;
 }
+float Org::getHeat() const
+{
+	return heat;
+}
 
 const char* Org::S_ORG_NAMES_ARR[ORG_RANDOM_NAME_ARR_LENGTH] //@TODO expnd
 {

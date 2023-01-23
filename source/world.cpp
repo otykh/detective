@@ -7,16 +7,23 @@ World::World(bool(*randBool)(int), int(*randRange)(int, int)) : randBool(randBoo
 {
 }
 
-Character* World::GetRandomCharacter()
+Character* World::GetRandomCharacterInOrg(Org* org) const
 {
-	Character* ch = this->characters[randRange(0, this->characters.size())];
-	if(ch->getIsAlive() == false)
+	int index = randRange(0, org->associates.size());
+	for(;;)
 	{
-		return World::GetRandomCharacter(); //@TODO remove this and use some other method, this will cause stack overflow 
+		Character* ch = org->associates[index];
+		if(ch->getIsAlive() == true)
+		{
+			return ch;
+		}
+		else
+		{
+			index++;
+		}
 	}
-	return ch;
 }
-Org* World::GetRandomOrganisation()
+Org* World::GetRandomOrganisation() const
 {
 	return organizations[randRange(0, organizations.size())];
 }
@@ -26,15 +33,30 @@ Org* World::GenerateOrganization()
 	this->organizations.push_back(generated);
 	return generated;
 }
-Character* World::GenerateCharacter(Org* originOrg)
+Character* World::GenerateCharacter(Org* originOrg, int future_position)
 {
 	// Character(std::string name, std::string surname, int age, bool gender, Org* org_ptr);
 	std::string name;
 	std::string nick_name;
 	std::string sur_name;
+
 	bool isMale = randBool(90);
 	int n_index = randRange(0, CHARACTER_RANDOM_NAME_ARRAY_LENGTH);
 	int sur_index = randRange(0, CHARACTER_RANDOM_SURNAME_ARRAY_LENGTH);
+
+	int age;
+	if(future_position == 0)
+	{
+		age = randRange(51, 76); // the boss should be older
+	}
+	else if(future_position == 1)
+	{
+		age = randRange(30, 50); // the trusted people should have older age
+	}
+	else
+	{
+		age = randRange(18, 50);
+	}
 
 	if(isMale)
 	{
@@ -46,7 +68,16 @@ Character* World::GenerateCharacter(Org* originOrg)
 	}
 	sur_name = Character::S_CHARACTER_SURNAMES[sur_index];
 
-	int nick_len = randRange(2, 4);
+	int nick_len;
+	if(future_position == 0)
+	{
+		nick_len = 1; // for the 0 figures (boss of the org) need's a cool nick name
+	}
+	else
+	{
+		nick_len = randRange(2, 4);
+	}
+
 	for(int i = 0; i < nick_len; i++)
 	{
 		nick_name += Character::S_NICK_NAMES[randRange(0, CHARACTER_RANDOM_NICK_NAME_ARRAY_LENGTH)];
@@ -56,7 +87,7 @@ Character* World::GenerateCharacter(Org* originOrg)
 		name,
 		sur_name,
 		nick_name,
-		randRange(18, 50),
+		age,
 		isMale,
 		originOrg
 	);
@@ -66,44 +97,43 @@ Character* World::GenerateCharacter(Org* originOrg)
 }
 void World::GenerateRandomWorld()
 {
-	int seed = time(NULL);
-	srand(seed);
-
-	Logger::l << "seed: " << seed << std::endl;
-
-	Org* org = World::GenerateOrganization();
-
-	int member_count = randRange(6, 100);
-	int layer1;
-	int layer2;
-	if(member_count > 20)
+	for(int i = 0; i < randRange(3, 6); i++)
 	{
-		layer1 = member_count * 0.05f;
-		layer2 = (member_count - layer1) * 0.2;
+		Org* org = World::GenerateOrganization();
+
+		int member_count = randRange(6, 100);
+		int layer1;
+		int layer2;
+		if(member_count > 20)
+		{
+			layer1 = member_count * 0.05f;
+			layer2 = (member_count - layer1) * 0.2;
+		}
+		else
+		{
+			layer1 = member_count;
+			layer2 = 0;
+		}
+
+		std::cout << member_count << std::endl;
+		std::cout << layer1 << std::endl;
+		std::cout << layer2 << std::endl;
+
+		for(int i = 0; i < member_count; i++)
+		{
+			int position;
+
+			if(i == 0) {position = 0;}
+			else if(i <= layer1) {position = 1;}
+			else if(i <= layer2) {position = 2;}
+			else {position = 3;}
+
+			Character* genChar = World::GenerateCharacter(org, position);
+
+			org->AddAssociate(genChar, position);
+		}
+		org->Restructure();
 	}
-	else
-	{
-		layer1 = member_count;
-		layer2 = 0;
-	}
-
-	std::cout << member_count << std::endl;
-	std::cout << layer1 << std::endl;
-	std::cout << layer2 << std::endl;
-
-	for(int i = 0; i < member_count; i++)
-	{
-		int position;
-		Character* genChar = World::GenerateCharacter(org);
-
-		if(i == 0) {position = 0;}
-		else if(i <= layer1) {position = 1;}
-		else if(i <= layer2) {position = 2;}
-		else {position = 3;}
-
-		org->AddAssociate(genChar, position);
-	}
-	org->Restructure();
 }
 void World::PrintOrgTree(Org* org)
 {
@@ -116,7 +146,14 @@ void World::PrintResponsible(Org* org, int layer, int index)
 	{
 		Logger::ls << '\t';
 	}
-	Logger::ls << cstring(top->toString(), static_cast<cstring::COLORS>(layer + 1)) << std::endl;
+	if(top->getIsAlive())
+	{
+		Logger::ls << cstring(top->toString(), static_cast<cstring::COLORS>(layer + 1)) << std::endl;
+	}
+	else
+	{
+		Logger::ls << cstring(top->toString(), static_cast<cstring::COLORS>(layer + 1), cstring::RED, cstring::BLINK) << std::endl;
+	}
 
 	for(int i = org->responsibility[layer][index].first; i < org->responsibility[layer][index].second + 1; i++)
 	{
@@ -132,7 +169,7 @@ void World::PrintWorldInformation()
 
 		Logger::l << "They call themselves \"" << cstring(org->getName(), cstring::BLACK, cstring::RED) << "\"" << std::endl;
 
-		for(int i = 0; i < org->structure.size(); i++)
+		/*for(int i = 0; i < org->structure.size(); i++)
 		{
 			for(int j = 0; j < org->structure[i].size(); j++)
 			{
@@ -148,7 +185,7 @@ void World::PrintWorldInformation()
 				std::cout << '{' << org->responsibility[i][j].first << " ; " << org->responsibility[i][j].second << "} ";
 			}
 			std::cout << std::endl;
-		}
+		}*/
 		World::PrintOrgTree(org);
 
 		Logger::ls << std::endl;

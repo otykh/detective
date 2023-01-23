@@ -1,4 +1,5 @@
 #include "eventmgr.h"
+#include <algorithm>
 #include <iostream>
 
 EventManager::Event::Event(int functionIndex, std::string formula)
@@ -6,15 +7,27 @@ EventManager::Event::Event(int functionIndex, std::string formula)
 	this->functionIndexCall = functionIndex;
 	this->formula = formula;
 }
-std::string EventManager::CauseEvent(World& w, int index)
+EventManager::EventManager(int(*randRange)(int, int))
 {
-	return EventManager::eventArray[index]->Activate(w);
+	this->randRange = randRange;
+	if(this->randRange == nullptr)
+	{
+		throw;
+	}
 }
-std::string EventManager::Event::Activate(World& w)
+std::string EventManager::CauseOrgEvent(const World& w, Org* const org)
+{
+	int maxEventIndex = org->getHeat() * EVENT_MANAGER_EVENT_NUMBER;
+	maxEventIndex = std::max(maxEventIndex, MIN_EVENT_LENGTH);
+	int index = randRange(0, maxEventIndex);
+	return EventManager::eventArray[index]->Activate(w, org);
+}
+std::string EventManager::Event::Activate(const World& w, Org* const org)
 {
 	//std::string output = "The event was cause has formula of: ";
 	//output += formula + '\n';
 	std::string output;
+	output += "in " + org->getName() + " ";
 
 	bool gettingCharacterInfo;
 	bool hidden = false;
@@ -59,7 +72,7 @@ std::string EventManager::Event::Activate(World& w)
 				if(victimNumberRemembered > recordedCharacters.size())
 				{
 					// get random character if it is not in vector
-					recordedCharacters.push_back(w.GetRandomCharacter()); // add new character
+					recordedCharacters.push_back(w.GetRandomCharacterInOrg(org)); // add new character
 					isVictim.push_back(isVictimRemembered);
 				}
 				if(!hidden)
@@ -83,6 +96,7 @@ std::string EventManager::Event::Activate(World& w)
 		}
 	}
 
+	bool no_victims = true;
 	for(int a = 0; a < recordedCharacters.size(); a++)
 	{
 		if(isVictim[a]) { continue; }
@@ -90,8 +104,17 @@ std::string EventManager::Event::Activate(World& w)
 		{
 			if(a != v)
 			{
+				no_victims = false;
 				EventManager::functionArray[functionIndexCall](recordedCharacters[a], recordedCharacters[v]);
 			}
+		}
+	}
+
+	if(no_victims)
+	{
+		for(int i = 0; i < recordedCharacters.size(); i++)
+		{
+			EventManager::functionArray[functionIndexCall](recordedCharacters[i], nullptr);
 		}
 	}
 	//EventManager::functionArray[functionIndexCall](nullptr, nullptr);
@@ -102,26 +125,61 @@ std::string EventManager::Event::Activate(World& w)
 // after that put the index of the character, like '$1', which reads first character
 // after all of that put the sign weather the this character is attacker ('a') or attacker is victim('v')
 // if you want the same character to appear like in this case "$1v went into their room. $1 was killed by $2a"
+// if something is needs to be hidden from the event, use the | sign, which will hide the text
 const std::unique_ptr<EventManager::Event> EventManager::eventArray[EVENT_MANAGER_EVENT_NUMBER] =
 {
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a performed a task")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a, $2a peformed a task together")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a commited to the organisation")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a risked their life, working for organization")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a followed the order, successfully")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a was praised for their work")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a was appreciated by the managment")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a was scolded by the managment, $1a is now full of guilt")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a was threathened by another group")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a was remembering good times in organization")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+				"$1a had a good time being a part of organization")),
 	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
-				"$1a went into an argument with $2v")), // Ch on Ch, cons: 1 and 2 on bad terms
+				"$1a gets into a heated argument with $2v")),
 	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
-				"$1a dissrespected $2v")), // Ch on Ch, 1 and 2 on horrible terms
+				"$1a went ballistic with $2v, arguing about the managment")),
 	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
-				"$1a went into a fight with $2v, heavily injuring $2v")), // Ch on Ch, 1 and 2 at cross roads
+				"$1a smashesh thing around after hearing $2v speak wrong things about organization")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+				"$1a could not believe what $2v spoke about")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+				"$1a smashed a window|because of $2v")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+				"$1a beat up $2v")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+				"$1a went into an argument with $2v")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+				"$1a dissrespected $2v")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+				"$1a, $2a went out to steal from $3v, they stole a lot")),
 	std::unique_ptr<EventManager::Event>(new EventManager::Event(1,
-				"$1a killed $2v")), // Ch on Ch, 2 dies, 1 gets bad vibe from the org
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
-				"$1a, $2a went out to steal from $3v, they stole a lot")), // Ch with Ch on Ch, 3 hates 1 and 2
-	//std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
-	//				"$1 stole from the $2s organization")), // Ch on Org, 2s org stays at bad terms with 1's organisation
+				"$1a appeciated $2v")),
 	std::unique_ptr<EventManager::Event>(new EventManager::Event(2,
-				"$1v was found dead|killed by $2a")), // Ch on Ch, $1 is dead killed by 2, but only the player will know about $1 death but now who did it, but the consequences inside the org will be applied ex. 2 is now disrespected among their group
+				"$1a killed $2v")),
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(3,
+				"$1v was found dead|killed by $2a")),
 };
 void (*EventManager::functionArray[5])(Character*, Character*) =
 {
-	[](Character* a, Character* v){ a->GetDisrespectedBy(v); },
+	[](Character* a, Character* v){ v->GetDisrespectedBy(a); },
+	[](Character* a, Character* v){ v->GetAppreciatedBy(a); },
 	[](Character* a, Character* v){ v->GetKilled(a); },
 	[](Character* a, Character* v){ v->GetKilled(nullptr); }, // gets killed, but the killer is unknown
+	[](Character* a, Character* v){ a->IncreaseOrgLikeness(); }
 };

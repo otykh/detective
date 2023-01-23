@@ -14,8 +14,8 @@ private:
 	const int id;
 	const std::string orgName;
 
-	int heat;
-	// how heated the organization is
+	float heat;
+	// [0, 1] range how heated the organization is
 	// the large the head the more events and the more impactful they will be
 	// heat is increased by the time and investigation
 
@@ -23,6 +23,7 @@ public:
 	Org(std::string orgName);
 
 	std::string getName() const;
+	float getHeat() const;
 	void AddAssociate(Character* newCharacter, int position);
 	void Restructure();
 

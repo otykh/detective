@@ -25,11 +25,19 @@ int randRange(int min, int max)
 
 int main()
 {
+	//int seed = time(NULL);
+	int seed = 1674408403;
+	srand(seed);
+	Logger::l << "seed: " << seed << std::endl;
+
 	World w(randBool, randRange);
+	EventManager evm(randRange);
+
 	w.GenerateRandomWorld();
-	for(int i = 0; i < EVENT_MANAGER_EVENT_NUMBER; i++)
+
+	for(int i = 0; i < 100; i++)
 	{
-		std::cout << EventManager::CauseEvent(w, i) << std::endl;
+		std::cout << evm.CauseOrgEvent(w, w.GetRandomOrganisation()) << std::endl;
 	}
 
 	w.PrintWorldInformation();

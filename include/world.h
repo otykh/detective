@@ -25,10 +25,10 @@ public:
 	World(bool(*)(int), int(*)(int, int));
 	// functions to access the characters etc.
 	void GenerateRandomWorld();
-	Character* GetRandomCharacter();
-	Org* GetRandomOrganisation();
+	Character* GetRandomCharacterInOrg(Org*) const;
+	Org* GetRandomOrganisation() const;
 	Org* GenerateOrganization();
-	Character* GenerateCharacter(Org* originOrg);
+	Character* GenerateCharacter(Org* originOrg, int future_position);
 
 	void PrintWorldInformation();
 	static void PrintOrgTree(Org* org);
