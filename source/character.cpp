@@ -4,7 +4,7 @@
 int Character::idCounter = 0;
 
 Character::Character(std::string& i_name, std::string& i_surname, std::string& i_nick, int i_age, bool i_gender, Org* i_org_ptr) :
-	id(idCounter++),
+	id(Character::idCounter++),
 	name(i_name),
 	surname(i_surname),
 	nick_name(i_nick),
@@ -12,15 +12,15 @@ Character::Character(std::string& i_name, std::string& i_surname, std::string& i
 	isMale(i_gender),
 	ptr_associated_organization(i_org_ptr)
 {
-	this->isAlive = true;
+	this->status = CharacterStatus::Alive;
 
-	this->org_respect = random::Float();
-	this->trust = random::Float();
+	this->org_respect = 1;
+	this->trust = 1;
 	this->talkative = random::Float();
 	this->responsible = random::Float();
-	this->respect = random::Float();
+	this->respect = 1;
 	this->naive = random::Float();
-	this->hatered = random::Float();
+	this->hatered = 1;
 
 	this->value_respect = random::Float();
 	this->value_life = random::Float();
@@ -53,38 +53,75 @@ bool Character::getIsMale() const
 }
 bool Character::getIsAlive() const
 {
-	return this->isAlive;
+	return this->status != CharacterStatus::Dead;
 }
 
-float Character::get_value_respect()
+float Character::get_org_respect() const
+{
+	return this->org_respect;
+}
+float Character::get_trust() const
+{
+	return this->trust;
+}
+float Character::get_talkative() const
+{
+	return this->talkative;
+}
+float Character::get_responsible() const
+{
+	return this->responsible;
+}
+float Character::get_respect() const
+{
+	return this->respect;
+}
+float Character::get_naive() const
+{
+	return this->naive;
+}
+float Character::get_hatered() const
+{
+	return this->hatered;
+}
+
+float Character::get_value_respect() const
 {
 	return value_respect;
 }
-float Character::get_value_life()
+float Character::get_value_life() const
 {
 	return value_life;
 }
-float Character::get_value_security()
+float Character::get_value_security() const
 {
 	return value_security;
 }
-float Character::get_value_money()
+float Character::get_value_money() const
 {
 	return value_money;
 }
-float Character::get_value_justice()
+float Character::get_value_justice() const
 {
 	return value_justice;
 }
-float Character::get_value_privacy()
+float Character::get_value_privacy() const
 {
 	return value_privacy;
 }
-float Character::get_value_family()
+float Character::get_value_family() const
 {
 	return value_family;
 }
 
+void Character::change_status(Character::CharacterStatus newStatus)
+{
+	this->status = newStatus;
+}
+Character::CharacterStatus Character::get_status() const
+{
+	return this->status;
+}
 void Character::GetDisrespectedBy(Character* attacker)
 {
 	this->change_trust(-0.2f);
@@ -96,7 +133,7 @@ void Character::GetAppreciatedBy(Character* attacker)
 }
 void Character::GetKilled(Character* attacker)
 {
-	this->isAlive = false; // now this character is DEAD
+	this->change_status(CharacterStatus::Dead);
 	//@TODO report who is the attacker and at which operation GetInformedAboutDeath()
 }
 void Character::IncreaseOrgLikeness()
@@ -112,12 +149,30 @@ void Character::GetInformedAboutDeath()
 }
 std::string Character::toString()
 {
-	return this->getFullName() + " aka. \"" + this->getNickName() + "\" " + std::to_string(this->getAge()) + " years old " + (this->getIsMale() ? "Male " : "Female ") + ", Status: " + (this->getIsAlive() ? "Alive " : "DEAD ");
+	return this->getFullName() + " aka. \"" + this->getNickName() + "\" " + std::to_string(this->getAge()) + " years old " + (this->getIsMale() ? "Male " : "Female ") + ", Status: " + this->fromStatusToString();
 }
 std::ostream& operator<<(std::ostream& os, const Character& dt)
 {
-	os << dt.getFullName() << " aka. \"" << dt.getNickName() << "\" " << dt.getAge() << " years old " << (dt.getIsMale() ? "Male " : "Female ") << ", Status: " << (dt.getIsAlive() ? "Alive " : "DEAD ");
+	os << dt.getFullName() << " aka. \"" << dt.getNickName() << "\" " << dt.getAge() << " years old " << (dt.getIsMale() ? "Male " : "Female ") << ", Status: " << dt.fromStatusToString();
     return os;
+}
+std::string Character::fromStatusToString() const
+{
+	switch(this->status)
+	{
+		case Character::Alive:
+			return "Alive";
+		case Character::Sleeping:
+			return "Sleeping";
+		case Character::Away:
+			return "Away";
+		case Character::Left:
+			return "Left";
+		case Character::Dead:
+			return "Dead";
+		default:
+			return "Unknown";
+	}
 }
 
 // BOILERPLATE:
@@ -313,7 +368,7 @@ const char* Character::S_NICK_NAMES[CHARACTER_RANDOM_NICK_NAME_ARRAY_LENGTH] =
 	"Riku", "Bread",
 	"Galactic", "Wolf",
 	"Never", "Freez",
-	"Covid", "Onix",
+	"Cake", "Onix",
 	"Alpha", "River",
 	"Tek", "Nova",
 	"Mamba", "Flamme",

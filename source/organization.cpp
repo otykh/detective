@@ -6,6 +6,30 @@ Org::Org(std::string i_orgName) : orgName(i_orgName), id(Org::idCounter++)
 	heat_extend = 0;
 	heat = 0;
 }
+
+void Org::Call(bool isDay)
+{
+	for(int i = 0; i < associates.size(); i++)
+	{
+		// only change from SLEEP -> ALIVE
+		// only change from ALIVE -> SLEEP
+		if(isDay)
+		{
+			if(associates[i]->get_status() == Character::Sleeping)
+			{
+				associates[i]->change_status(Character::Alive);
+			}
+		}
+		else
+		{
+			if(associates[i]->get_status() == Character::Alive)
+			{
+				associates[i]->change_status(Character::Sleeping);
+			}
+		}
+	}
+}
+
 void Org::AddAssociate(Character* newCharacter, int position)
 {
 	associates.push_back(newCharacter);
@@ -16,6 +40,32 @@ void Org::AddAssociate(Character* newCharacter, int position)
 	}
 
 	structure[position].push_back(associates.size() - 1);
+}
+void Org::CommitCrime()
+{
+	//@TODO make this in a normal way
+	if(this->structure.size() < 3)
+	{
+		return;
+	}
+	// what is a criminal without criminal activity
+	// each org will do some crimes depending on their situation
+	// some random, some not so much
+	// first, chose the leader of this crime
+	std::vector<int>& leaderArr = structure[structure.size() - 2];
+	int person = random::Range(0, leaderArr.size());
+
+	const std::pair<int, int>& groupRange = getResponsibilityFor(structure.size() - 2, person);
+	//std::pair<int, int>& groupRange = responsibility[responsibility.size() - 2][person];
+
+	Character* leader = getCharacterAt(leaderArr[person]);
+
+	std::cout << *leader << " lead a crime action with:" << std::endl;
+	for(int i = groupRange.first; i < groupRange.second + 1; i++)
+	{
+		std::cout << getCharacterAt(structure[structure.size() - 1][i])->getFullName() << ", ";
+	}
+	std::cout << std::endl;
 }
 void Org::Restructure()
 {
@@ -49,6 +99,14 @@ void Org::Restructure()
 		}
 	}
 }
+Character* Org::getCharacterAt(int n) const
+{
+	return associates[n];
+}
+const std::pair<int, int>& Org::getResponsibilityFor(int layer, int n) const
+{
+	return responsibility[layer][n];
+}
 std::string Org::getName() const
 {
 	return orgName;
@@ -69,13 +127,13 @@ float Org::CompareTwoOrgsAlignment(const Org* orgOne, const Org* orgTwo)
 
 	float relation = 0;
 
-	relation += bossOne->get_value_respect() - bossTwo->get_value_respect();
-    relation += bossOne->get_value_life() - bossTwo->get_value_life();
-    relation += bossOne->get_value_security() - bossTwo->get_value_security();
-    relation += bossOne->get_value_money() - bossTwo->get_value_money();
-    relation += bossOne->get_value_justice() - bossTwo->get_value_justice();
-    relation += bossOne->get_value_privacy() - bossTwo->get_value_privacy();
-    relation += bossOne->get_value_family() - bossTwo->get_value_family();
+	relation += std::abs(bossOne->get_value_respect() - bossTwo->get_value_respect());
+    relation += std::abs(bossOne->get_value_life() - bossTwo->get_value_life());
+    relation += std::abs(bossOne->get_value_security() - bossTwo->get_value_security());
+    relation += std::abs(bossOne->get_value_money() - bossTwo->get_value_money());
+    relation += std::abs(bossOne->get_value_justice() - bossTwo->get_value_justice());
+    relation += std::abs(bossOne->get_value_privacy() - bossTwo->get_value_privacy());
+    relation += std::abs(bossOne->get_value_family() - bossTwo->get_value_family());
 
 	relation = relation / 7;
 

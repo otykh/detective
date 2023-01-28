@@ -2,15 +2,16 @@
 #include <algorithm>
 #include <iostream>
 
-EventManager::Event::Event(int functionIndex, std::string formula)
+EventManager::Event::Event(bool positiveEvent, int functionIndex, std::string formula)
 {
 	this->functionIndexCall = functionIndex;
 	this->formula = formula;
+	this->positive = positiveEvent;
 }
 
 std::string EventManager::CauseOrgEvent(const World& w, Org* const org)
 {
-	int maxEventIndex = org->getHeat() * EVENT_MANAGER_EVENT_NUMBER;
+	int maxEventIndex = org->getHeat() * MAX_NORMAL_EVENT_LENGTH;
 	maxEventIndex = std::max(maxEventIndex, MIN_EVENT_LENGTH);
 	int index = random::Range(0, maxEventIndex);
 	return EventManager::eventArray[index]->Activate(w, org);
@@ -20,7 +21,7 @@ std::string EventManager::Event::Activate(const World& w, Org* const org)
 	//std::string output = "The event was cause has formula of: ";
 	//output += formula + '\n';
 	std::string output;
-	output += "in " + org->getName() + " ";
+	output += "in " + org->getName() + ": ";
 
 	bool gettingCharacterInfo;
 	bool hidden = false;
@@ -110,6 +111,52 @@ std::string EventManager::Event::Activate(const World& w, Org* const org)
 			EventManager::functionArray[functionIndexCall](recordedCharacters[i], nullptr);
 		}
 	}
+	else
+	{
+		// need to give reason for all of this (there were victims)
+		output += " reason:";
+
+		for(int i = 0; i < recordedCharacters.size(); i++)
+		{
+			if(isVictim[i]) { continue; }
+
+			Character* ch = recordedCharacters[i];
+			// this->positive and get hatered etc.
+
+			if(!this->positive)
+			{
+				if(ch->get_hatered() >= 0.8f)
+				{
+					output += " could not stand each other";
+				}
+				else if(ch->get_trust() <= 0.5f)
+				{
+					output += " suspected of wrong doing";
+				}
+				else if(ch->get_respect() <= 0.35f)
+				{
+					output += " found them to be \"lesser\" in this organization";
+				}
+				else if(ch->get_org_respect() <= 0.2f)
+				{
+					output += " tried to sabotage the organisation";
+				}
+				else if(ch->get_responsible() <= 0.1f)
+				{
+					output += " did not keep their eye out";
+				}
+				else
+				{
+					output += " mistake";
+				}
+			}
+			else
+			{
+				output += " to increase the general atmosphere in the org";
+			}
+		}
+	}
+
 	//EventManager::functionArray[functionIndexCall](nullptr, nullptr);
 	return output;
 }
@@ -121,51 +168,51 @@ std::string EventManager::Event::Activate(const World& w, Org* const org)
 // if something is needs to be hidden from the event, use the | sign, which will hide the text
 const std::unique_ptr<EventManager::Event> EventManager::eventArray[EVENT_MANAGER_EVENT_NUMBER] =
 {
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a performed a task")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a, $2a peformed a task together")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a commited to the organisation")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a risked their life, working for organization")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a followed the order, successfully")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a was praised for their work")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a was appreciated by the managment")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a was scolded by the managment, $1a is now full of guilt")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a was threathened by another group")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a was remembering good times in organization")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(4,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(true, 4,
 				"$1a had a good time being a part of organization")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 0,
 				"$1a gets into a heated argument with $2v")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 0,
 				"$1a went ballistic with $2v, arguing about the managment")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 0,
 				"$1a smashesh thing around after hearing $2v speak wrong things about organization")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 0,
 				"$1a could not believe what $2v spoke about")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 0,
 				"$1a smashed a window|because of $2v")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 0,
 				"$1a beat up $2v")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 0,
 				"$1a went into an argument with $2v")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 0,
 				"$1a dissrespected $2v")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(0,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 0,
 				"$1a, $2a went out to steal from $3v, they stole a lot")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(1,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 1,
 				"$1a appeciated $2v")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(2,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 2,
 				"$1a killed $2v")),
-	std::unique_ptr<EventManager::Event>(new EventManager::Event(3,
+	std::unique_ptr<EventManager::Event>(new EventManager::Event(false, 3,
 				"$1v was found dead|killed by $2a")),
 };
 void (*EventManager::functionArray[5])(Character*, Character*) =

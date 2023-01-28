@@ -20,8 +20,20 @@ private:
 	std::vector<Org*> organizations;
 	std::vector<std::vector<float>> org_relations;
 
+	inline static const int endTime = 72;
+	inline static const int divideToGetTime = 3;
+	inline static const int dayTimeEndTick = 48;
+
+	int hourCount;
+
 public:
 	World();
+
+	void tick();
+	bool isDay();
+	void DateEnd(); // when this date completes
+	void DateStart(); // this this date starts
+	int GetRealTime() const;
 	// functions to access the characters etc.
 	void GenerateRandomWorld();
 	void GenerateOrgRelations();

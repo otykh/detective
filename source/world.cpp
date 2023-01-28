@@ -4,8 +4,62 @@
 
 World::World()
 {
+	hourCount = 1;
 }
 
+void World::tick()
+{
+	hourCount++;
+	if(hourCount > World::endTime)
+	{
+		// this DAY ends, thus reset the count
+		DateEnd();
+		hourCount = 0;
+	}
+	else if(hourCount == dayTimeEndTick)
+	{
+		// day time ends, everyone goes to sleep
+		//
+		Logger::lwarn << "Sleepy Time!" << std::endl;
+		for(int i = 0; i < organizations.size(); i++)
+		{
+			organizations[i]->Call(false);
+		}
+	}
+	else if(hourCount == 1)
+	{
+		// first hour of the day
+		DateStart();
+
+		Logger::lwarn << "Wakey Wakey!" << std::endl;
+		for(int i = 0; i < organizations.size(); i++)
+		{
+			organizations[i]->Call(true);
+		}
+	}
+	else
+	{
+	}
+
+	/*for(int i = 0; i < organizations.size(); i++)
+	{
+		organizations[i]->TickUpdate(isDay());
+	}*/
+}
+bool World::isDay()
+{
+	return World::hourCount < dayTimeEndTick;
+}
+void World::DateEnd()
+{
+}
+void World::DateStart()
+{
+}
+int World::GetRealTime() const
+{
+	return World::hourCount / World::divideToGetTime;
+}
 Character* World::GetRandomCharacterInOrg(Org* org) const
 {
 	int heat_extend_mod = random::Range(0, org->getHeatExtend());

@@ -9,10 +9,21 @@
 
 class Org;
 
+
 class Character
 {
-	static int idCounter;
+public:
+	enum CharacterStatus
+	{
+		Alive, // if the person is Alive
+		Sleeping, // person is Sleaping
+		Away, // meaning that person left and currently not at org but still part of it
+		Left, // person is not part of the group anymore
+		Dead // dead
+	};
+
 private:
+	static int idCounter;
 	const int id;
 	const std::string name;
 	const std::string surname;
@@ -22,7 +33,7 @@ private:
 
 	const Org* ptr_associated_organization; // who is a part of this organisation, pointer
 
-	bool isAlive;
+	CharacterStatus status;
 
 	// Organisation Related, used for reason and interigation
 	// all in range from 0 (not at all) - 1 (very much so)
@@ -54,6 +65,7 @@ private:
 public:
 	Character(std::string& i_name, std::string& i_surname, std::string& i_nick, int age, bool isMale, Org* org_ptr);
 
+	std::string fromStatusToString() const;
 	std::string getFullName() const;
 	std::string getNickName() const;
 	int getId() const;
@@ -71,6 +83,14 @@ public:
 	void GetInformedAboutDeath(); // used when someone is killed and proven with evidence, can cause less trust
 	friend std::ostream& operator<<(std::ostream& os, const Character& dt);
 
+	float get_org_respect() const;
+	float get_trust() const;
+	float get_talkative() const;
+	float get_responsible() const;
+	float get_respect() const;
+	float get_naive() const;
+	float get_hatered() const;
+
 	void change_org_respect(float c);
 	void change_trust(float c);
 	void change_talkative(float c);
@@ -79,13 +99,16 @@ public:
 	void change_naive(float c);
 	void change_hatered(float c);
 
-	float get_value_respect();
-	float get_value_life();
-	float get_value_security();
-	float get_value_money();
-	float get_value_justice();
-	float get_value_privacy();
-	float get_value_family();
+	float get_value_respect() const;
+	float get_value_life() const;
+	float get_value_security() const;
+	float get_value_money() const;
+	float get_value_justice() const;
+	float get_value_privacy() const;
+	float get_value_family() const;
+
+	void change_status(CharacterStatus);
+	CharacterStatus get_status() const;
 
 	static const char* S_CHARACTER_MALE_NAMES[];
 	static const char* S_CHARACTER_FEMALE_NAMES[];

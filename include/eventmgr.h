@@ -13,17 +13,20 @@
 
 #define EVENT_MANAGER_EVENT_NUMBER 23
 #define MIN_EVENT_LENGTH 11 // where the event is ends at minimum heat
+#define MAX_NORMAL_EVENT_LENGTH 23
 
 struct EventManager
 {
 	// events are STATIC and do NOT store any information about the party involved, the events change states of the objects they operated but DO NOT store anything, they just work as a custom function
 	class Event
 	{
+		bool positive;
+
 		std::string formula;
 		int functionIndexCall;
 
 	public:
-		Event(int, std::string);
+		Event(bool, int, std::string);
 		std::string Activate(const World& w, Org* const org); // returns event description when called
 	};
 
@@ -33,8 +36,7 @@ struct EventManager
 
 private:
 	int(*randRange)(int, int);
-	static void (*functionArray[5])(Character*, Character*);
-
+	static void (*functionArray[])(Character*, Character*);
 	//bad_event = {"X stole 100$ from BANK"};
 	//good_event = {"X was caught while doing Y"};
 	//internal_event = {"X got rid of Y hidden: killed Y"};

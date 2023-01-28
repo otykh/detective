@@ -4,13 +4,18 @@
 #include <vector>
 #include "character.h"
 #include <memory>
+#include <iostream>
 
 #define ORG_RANDOM_NAME_ARR_LENGTH 29
 
 class Org
 {
-	static int idCounter;
+friend class World;
+friend class EventManager;
+
 private:
+	static int idCounter;
+
 	const int id;
 	const std::string orgName;
 
@@ -26,9 +31,15 @@ private:
 public:
 	Org(std::string orgName);
 
+private:
+	void Call(bool isDay);
+
 	std::string getName() const;
 	float getHeat() const;
 	int getHeatExtend() const;
+	Character* getCharacterAt(int) const;
+	const std::pair<int, int>& getResponsibilityFor(int layer, int) const;
+	void CommitCrime();
 	void AddAssociate(Character* newCharacter, int position);
 	void Restructure();
 
@@ -41,7 +52,6 @@ public:
 	// 1 - is trusted people
 	// 2 - is managers
 	// 3 - is workers
-	// 4 - associates, not working just part of the operation
 	// the smaller the structure the more limited the size of the operation
 	std::vector<std::vector<std::pair<int, int>>> responsibility;
 	// who is responsible for who
